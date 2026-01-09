@@ -12,9 +12,22 @@ public struct BenchmarkResult: Identifiable {
     let name: String
     let jjlTime: Double
     let appleTime: Double
+    let formatStyleTime: Double?
+    
+    init(name: String, jjlTime: Double, appleTime: Double, formatStyleTime: Double? = nil) {
+        self.name = name
+        self.jjlTime = jjlTime
+        self.appleTime = appleTime
+        self.formatStyleTime = formatStyleTime
+    }
     
     var speedup: Double {
         appleTime / jjlTime
+    }
+    
+    var speedupVsFormatStyle: Double? {
+        guard let formatStyleTime else { return nil }
+        return formatStyleTime / jjlTime
     }
     
     var speedupText: String {
@@ -22,6 +35,15 @@ public struct BenchmarkResult: Identifiable {
             return String(format: "%.2fx faster", speedup)
         } else {
             return String(format: "%.2fx slower", 1 / speedup)
+        }
+    }
+    
+    var speedupVsFormatStyleText: String? {
+        guard let speedupVsFormatStyle else { return nil }
+        if speedupVsFormatStyle > 1 {
+            return String(format: "%.2fx faster", speedupVsFormatStyle)
+        } else {
+            return String(format: "%.2fx slower", 1 / speedupVsFormatStyle)
         }
     }
 }
@@ -92,7 +114,13 @@ public class BenchmarkEngine: ObservableObject {
         constructionResult = constructResult
         log(String(format: "  JJL (OC)              : %.6f seconds", constructResult.jjlTime))
         log(String(format: "  Apple ISO8601         : %.6f seconds", constructResult.appleTime))
-        log("  📈 \(constructResult.speedupText)")
+        if let formatStyleTime = constructResult.formatStyleTime {
+            log(String(format: "  Apple FormatStyle     : %.6f seconds", formatStyleTime))
+        }
+        log("  📈 vs ISO8601: \(constructResult.speedupText)")
+        if let speedupText = constructResult.speedupVsFormatStyleText {
+            log("  📈 vs FormatStyle: \(speedupText)")
+        }
         progress = 0.1
         
         let currentStartDate = Date(timeIntervalSinceNow: -15 * DAYS)
@@ -115,7 +143,13 @@ public class BenchmarkEngine: ObservableObject {
             )
             log(String(format: "      JJL (OC)          : %.6f seconds", recentS2D.jjlTime))
             log(String(format: "      Apple ISO8601     : %.6f seconds", recentS2D.appleTime))
-            log("      📈 \(recentS2D.speedupText)")
+            if let formatStyleTime = recentS2D.formatStyleTime {
+                log(String(format: "      Apple FormatStyle : %.6f seconds", formatStyleTime))
+            }
+            log("      📈 vs ISO8601: \(recentS2D.speedupText)")
+            if let speedupText = recentS2D.speedupVsFormatStyleText {
+                log("      📈 vs FormatStyle: \(speedupText)")
+            }
             
             log("    Dates from 1970 until now:")
             let epochS2D = await testPerformance(
@@ -126,7 +160,13 @@ public class BenchmarkEngine: ObservableObject {
             )
             log(String(format: "      JJL (OC)          : %.6f seconds", epochS2D.jjlTime))
             log(String(format: "      Apple ISO8601     : %.6f seconds", epochS2D.appleTime))
-            log("      📈 \(epochS2D.speedupText)")
+            if let formatStyleTime = epochS2D.formatStyleTime {
+                log(String(format: "      Apple FormatStyle : %.6f seconds", formatStyleTime))
+            }
+            log("      📈 vs ISO8601: \(epochS2D.speedupText)")
+            if let speedupText = epochS2D.speedupVsFormatStyleText {
+                log("      📈 vs FormatStyle: \(speedupText)")
+            }
             
             stringToDateResults.append(TimeZoneResults(
                 timeZoneName: tzName,
@@ -153,7 +193,13 @@ public class BenchmarkEngine: ObservableObject {
             )
             log(String(format: "      JJL (OC)          : %.6f seconds", recentD2S.jjlTime))
             log(String(format: "      Apple ISO8601     : %.6f seconds", recentD2S.appleTime))
-            log("      📈 \(recentD2S.speedupText)")
+            if let formatStyleTime = recentD2S.formatStyleTime {
+                log(String(format: "      Apple FormatStyle : %.6f seconds", formatStyleTime))
+            }
+            log("      📈 vs ISO8601: \(recentD2S.speedupText)")
+            if let speedupText = recentD2S.speedupVsFormatStyleText {
+                log("      📈 vs FormatStyle: \(speedupText)")
+            }
             
             log("    Dates from 1970 until now:")
             let epochD2S = await testPerformance(
@@ -164,7 +210,13 @@ public class BenchmarkEngine: ObservableObject {
             )
             log(String(format: "      JJL (OC)          : %.6f seconds", epochD2S.jjlTime))
             log(String(format: "      Apple ISO8601     : %.6f seconds", epochD2S.appleTime))
-            log("      📈 \(epochD2S.speedupText)")
+            if let formatStyleTime = epochD2S.formatStyleTime {
+                log(String(format: "      Apple FormatStyle : %.6f seconds", formatStyleTime))
+            }
+            log("      📈 vs ISO8601: \(epochD2S.speedupText)")
+            if let speedupText = epochD2S.speedupVsFormatStyleText {
+                log("      📈 vs FormatStyle: \(speedupText)")
+            }
             
             dateToStringResults.append(TimeZoneResults(
                 timeZoneName: tzName,
@@ -190,6 +242,7 @@ public class BenchmarkEngine: ObservableObject {
             
             var jjlTime: CFTimeInterval = 0
             var appleTime: CFTimeInterval = 0
+            var formatStyleTime: CFTimeInterval = 0
             
             // JJL Construction
             autoreleasepool {
@@ -209,7 +262,22 @@ public class BenchmarkEngine: ObservableObject {
                 appleTime = CACurrentMediaTime() - startTime
             }
             
-            return BenchmarkResult(name: "Construction", jjlTime: jjlTime, appleTime: appleTime)
+            // FormatStyle Construction
+            autoreleasepool {
+                let startTime = CACurrentMediaTime()
+                for _ in 0..<iterations {
+                    _ = Date.ISO8601FormatStyle(
+                        dateSeparator: .dash,
+                        dateTimeSeparator: .standard,
+                        timeSeparator: .colon,
+                        timeZoneSeparator: .colon,
+                        includingFractionalSeconds: true
+                    )
+                }
+                formatStyleTime = CACurrentMediaTime() - startTime
+            }
+            
+            return BenchmarkResult(name: "Construction", jjlTime: jjlTime, appleTime: appleTime, formatStyleTime: formatStyleTime)
         }.value
     }
     
@@ -227,6 +295,16 @@ public class BenchmarkEngine: ObservableObject {
             jjlFormatter.formatOptions = fullOptions
             appleFormatter.timeZone = timeZone
             jjlFormatter.timeZone = timeZone
+            
+            // FormatStyle with timezone
+            let formatStyle = Date.ISO8601FormatStyle(
+                dateSeparator: .dash,
+                dateTimeSeparator: .standard,
+                timeSeparator: .colon,
+                timeZoneSeparator: .colon,
+                includingFractionalSeconds: true,
+                timeZone: timeZone
+            )
             
             let iterations = stringToDate ? 100_000 : 1_000_000
             let endInterval = endDate.timeIntervalSince1970
@@ -251,6 +329,7 @@ public class BenchmarkEngine: ObservableObject {
             
             var jjlTime: CFTimeInterval = 0
             var appleTime: CFTimeInterval = 0
+            var formatStyleTime: CFTimeInterval = 0
             
             // JJL Benchmark
             autoreleasepool {
@@ -286,8 +365,25 @@ public class BenchmarkEngine: ObservableObject {
             
             usleep(200_000)
             
+            // FormatStyle Benchmark
+            autoreleasepool {
+                let startTime = CACurrentMediaTime()
+                if stringToDate {
+                    for string in strings {
+                        _ = try? Date(string, strategy: formatStyle)
+                    }
+                } else {
+                    for date in dates {
+                        _ = date.formatted(formatStyle)
+                    }
+                }
+                formatStyleTime = CACurrentMediaTime() - startTime
+            }
+            
+            usleep(200_000)
+            
             let name = stringToDate ? "String → Date" : "Date → String"
-            return BenchmarkResult(name: name, jjlTime: jjlTime, appleTime: appleTime)
+            return BenchmarkResult(name: name, jjlTime: jjlTime, appleTime: appleTime, formatStyleTime: formatStyleTime)
         }.value
     }
 }
@@ -296,9 +392,15 @@ public class BenchmarkEngine: ObservableObject {
 
 struct SpeedupBadge: View {
     let speedup: Double
+    var label: String? = nil
     
     var body: some View {
         HStack(spacing: 4) {
+            if let label {
+                Text(label)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
             Image(systemName: speedup > 1 ? "arrow.up.right" : "arrow.down.right")
                 .font(.caption2.bold())
             Text(String(format: "%.1fx", speedup > 1 ? speedup : 1/speedup))
@@ -321,10 +423,15 @@ struct ResultRow: View {
                 Text(result.name)
                     .font(.subheadline.bold())
                 Spacer()
-                SpeedupBadge(speedup: result.speedup)
+                VStack(alignment: .trailing, spacing: 4) {
+                    SpeedupBadge(speedup: result.speedup, label: "ISO8601")
+                    if let speedup = result.speedupVsFormatStyle {
+                        SpeedupBadge(speedup: speedup, label: "FormatStyle")
+                    }
+                }
             }
             
-            HStack(spacing: 16) {
+            HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("JJL (OC)")
                         .font(.caption)
@@ -335,12 +442,23 @@ struct ResultRow: View {
                 }
                 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Apple")
+                    Text("ISO8601")
                         .font(.caption)
                         .foregroundColor(.secondary)
                     Text(String(format: "%.4fs", result.appleTime))
                         .font(.footnote.monospacedDigit())
                         .foregroundColor(.blue)
+                }
+                
+                if let formatStyleTime = result.formatStyleTime {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("FormatStyle")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Text(String(format: "%.4fs", formatStyleTime))
+                            .font(.footnote.monospacedDigit())
+                            .foregroundColor(.purple)
+                    }
                 }
             }
         }
