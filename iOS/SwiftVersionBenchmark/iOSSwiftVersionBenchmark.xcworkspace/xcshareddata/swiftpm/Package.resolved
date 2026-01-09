@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "jjliso8601dateformatter",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Asura19/JJLISO8601DateFormatter.git",
+      "state" : {
+        "branch" : "master",
+        "revision" : "8488d466d6d5128bde951d347dff9ea0aa80e2e1"
+      }
+    }
+  ],
+  "version" : 2
+}

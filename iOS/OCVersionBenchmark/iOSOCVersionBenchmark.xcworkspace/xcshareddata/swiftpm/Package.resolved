@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "jjliso8601dateformatter",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/michaeleisel/JJLISO8601DateFormatter.git",
+      "state" : {
+        "branch" : "master",
+        "revision" : "0644789ec33bbeff405fbc19ea9f397f40bd2784"
+      }
+    }
+  ],
+  "version" : 2
+}
