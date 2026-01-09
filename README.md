@@ -4,15 +4,27 @@ Performance comparison between the **Original Objective-C version** and **Swift 
 
 📊 **[View Full Benchmark Report](BENCHMARK_REPORT.md)**
 
-## Quick Summary
+## Quick Summary: OC vs Swift Direct Comparison
 
-| Benchmark | OC Version | Swift Version | Winner |
-|-----------|:----------:|:-------------:|:------:|
-| **Construction** | ~18x | ~17x | ≈ Tie |
-| **String → Date** | ~20x | ~23x | **Swift** |
-| **Date → String** | ~6x | ~10x | **Swift** |
+### iOS (iPhone 16, iOS 26.1)
 
-> All speedups relative to Apple's `ISO8601DateFormatter`
+| Benchmark | OC | Swift | Winner |
+|-----------|:--:|:-----:|:------:|
+| **Construction** | 0.053s | 0.057s | OC (7% faster) |
+| **String → Date** | 0.117s | 0.116s | ≈ Tie |
+| **Date → String** | 0.159s | 0.105s | **Swift (34% faster)** ⭐ |
+
+### macOS (MacBook Pro M4 Pro)
+
+| Benchmark | OC | Swift | Winner |
+|-----------|:--:|:-----:|:------:|
+| **Construction** | 0.024s | 0.027s | OC (11% faster) |
+| **String → Date** | 0.122s | 0.109s | **Swift (11% faster)** |
+| **Date → String** | 0.136s | 0.092s | **Swift (48% faster)** ⭐ |
+
+### Key Takeaway
+
+**Date → String formatting is 34-48% faster in Swift version** - This is the most significant performance difference.
 
 ## Project Structure
 
@@ -20,24 +32,17 @@ Performance comparison between the **Original Objective-C version** and **Swift 
 JJLISO8601DateFormatterBenchmark/
 ├── iOS/                                    # iOS Benchmark Apps
 │   ├── OCVersionBenchmark/                 # OC version iOS app
-│   │   ├── iOSOCVersionBenchmark.xcworkspace  ← Open this
-│   │   ├── App/
-│   │   └── Package/
-│   ├── SwiftVersionBenchmark/              # Swift version iOS app
-│   │   ├── iOSSwiftVersionBenchmark.xcworkspace  ← Open this
-│   │   ├── App/
-│   │   └── Package/
-│   └── Config/                             # Shared Xcode configs
+│   │   └── iOSOCVersionBenchmark.xcworkspace  ← Open this
+│   └── SwiftVersionBenchmark/              # Swift version iOS app
+│       └── iOSSwiftVersionBenchmark.xcworkspace  ← Open this
 │
 ├── macOS/                                  # macOS Command Line Tools
 │   ├── OCVersionBenchmark/                 # OC version CLI
 │   ├── SwiftVersionBenchmark/              # Swift version CLI
-│   ├── compare_versions.sh                 # Run both benchmarks
-│   └── benchmark_results_*.txt             # Saved results
+│   └── compare_versions.sh                 # Run both benchmarks
 │
 ├── BENCHMARK_REPORT.md                     # 📊 Full benchmark report
-├── README.md
-└── LICENSE
+└── README.md
 ```
 
 ## Dependencies
@@ -93,27 +98,15 @@ swift build -c release && swift run -c release
 
 ---
 
-## Benchmark Details
+## Recommendations
 
-### Test Cases
-
-| Test | Iterations | Description |
-|------|------------|-------------|
-| Construction | 10,000 | Formatter object creation |
-| String → Date | 100,000 | Parse ISO8601 strings |
-| Date → String | 1,000,000 | Format dates to strings |
-
-### Time Zones Tested
-
-- `America/Sao_Paulo` (BRT)
-- `America/Indiana/Indianapolis`
-- `GMT`
-
-### Format Options
-
-```swift
-[.withInternetDateTime, .withColonSeparatorInTimeZone, .withFractionalSeconds]
-```
+| Use Case | Recommendation |
+|----------|----------------|
+| **High-volume date formatting** | ✅ **Swift** (34-48% faster) |
+| **High-volume date parsing** | ✅ Swift / Either |
+| **Frequent formatter creation** | ✅ OC (7-11% faster) |
+| **Pure Swift projects** | ✅ **Swift** |
+| **General use** | ✅ **Swift** |
 
 ---
 

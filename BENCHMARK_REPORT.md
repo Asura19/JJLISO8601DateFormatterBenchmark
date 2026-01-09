@@ -7,11 +7,9 @@ A comprehensive performance comparison between the **Original Objective-C versio
 | Platform | Device | OS Version | Swift Version |
 |----------|--------|------------|---------------|
 | **macOS** | MacBook Pro M4 Pro (48GB) | macOS 15.7.1 | Swift 6.2.3 |
-| **iOS** | iPhone 16 | iOS 18.7.1 | Swift 6.2.3 |
+| **iOS** | iPhone 16 | iOS 26.1 | Swift 6.2.3 |
 
 ## Benchmark Methodology
-
-All tests measure performance relative to Apple's built-in `ISO8601DateFormatter`:
 
 - **Construction**: 10,000 formatter object instantiations
 - **String → Date**: 100,000 parsing operations
@@ -29,150 +27,159 @@ Format options used:
 
 ---
 
-## Summary Results
+## Summary: Direct OC vs Swift Comparison
+
+### iOS (iPhone 16, iOS 26.1)
+
+| Benchmark | OC Time | Swift Time | Winner | Difference |
+|-----------|:-------:|:----------:|:------:|:----------:|
+| **Construction** | 0.053s | 0.057s | OC | 6.8% faster |
+| **String → Date** | 0.117s | 0.116s | ≈ Tie | ~1% |
+| **Date → String** | 0.159s | 0.105s | **Swift** | **34% faster** |
 
 ### macOS (MacBook Pro M4 Pro)
 
-| Benchmark | OC Version | Swift Version | Winner |
-|-----------|:----------:|:-------------:|:------:|
-| **Construction** | 18.63x | 16.57x | OC +12% |
-| **String → Date** | 19.1~21.9x | 21.2~24.5x | **Swift +13%** |
-| **Date → String** | 5.9~7.3x | 8.7~10.2x | **Swift +42%** |
-
-### iOS (iPhone 16)
-
-| Benchmark | OC Version | Swift Version | Winner |
-|-----------|:----------:|:-------------:|:------:|
-| **Construction** | 7.37x | 8.27x | **Swift +12%** |
-| **String → Date** | 13.9~14.6x | 14.6~16.3x | **Swift +7%** |
-| **Date → String** | 5.1~5.8x | 6.7~7.5x | **Swift +34%** |
-
-> All speedup values are relative to Apple's `ISO8601DateFormatter`
+| Benchmark | OC Time | Swift Time | Winner | Difference |
+|-----------|:-------:|:----------:|:------:|:----------:|
+| **Construction** | 0.024s | 0.027s | OC | 11% faster |
+| **String → Date** | 0.122s | 0.109s | **Swift** | **12% faster** |
+| **Date → String** | 0.136s | 0.092s | **Swift** | **48% faster** |
 
 ---
 
 ## Detailed Results
 
-### macOS Benchmark Results
+### iOS Benchmark Results (iPhone 16, iOS 26.1)
 
 #### Construction Performance (10,000 iterations)
 
-| Version | Time | Apple Baseline | Speedup |
-|---------|------|----------------|---------|
-| OC | 0.0244s | 0.4537s | **18.63x** |
-| Swift | 0.0271s | 0.4491s | 16.57x |
+| Version | Time | Comparison |
+|---------|------|------------|
+| **OC** | **0.0529s** | Baseline |
+| Swift | 0.0565s | OC is 6.8% faster |
 
 #### String to Date (100,000 iterations)
 
-| Time Zone | OC Time | OC Speedup | Swift Time | Swift Speedup |
-|-----------|---------|------------|------------|---------------|
-| **Sao Paulo (Recent)** | 0.1232s | 20.14x | 0.1052s | **24.09x** |
-| **Sao Paulo (1970-)** | 0.1226s | 20.50x | 0.1070s | **23.78x** |
-| **Indianapolis (Recent)** | 0.1325s | 19.13x | 0.1116s | **22.37x** |
-| **Indianapolis (1970-)** | 0.1147s | 21.87x | 0.1175s | 21.19x |
-| **GMT (Recent)** | 0.1162s | 21.68x | 0.1094s | **23.53x** |
-| **GMT (1970-)** | 0.1244s | 20.76x | 0.1056s | **24.53x** |
+| Time Zone | Swift | OC | Faster | Diff |
+|-----------|:-----:|:--:|:------:|:----:|
+| Sao Paulo (Recent) | **0.0969s** | 0.1068s | Swift | 9.2% |
+| Sao Paulo (1970-) | 0.1187s | **0.1150s** | OC | 3.2% |
+| Indianapolis (Recent) | **0.1192s** | 0.1211s | Swift | 1.5% |
+| Indianapolis (1970-) | 0.1179s | **0.1141s** | OC | 3.3% |
+| GMT (Recent) | **0.1214s** | 0.1239s | Swift | 2.0% |
+| GMT (1970-) | 0.1201s | **0.1188s** | OC | 1.0% |
 
-**Average**: OC 20.68x vs Swift **23.25x** (Swift is **12.4% faster**)
+**Average**: Swift 0.1157s vs OC 0.1166s → **Virtually identical** (~1% difference)
 
-#### Date to String (1,000,000 iterations)
+#### Date to String (1,000,000 iterations) ⭐
 
-| Time Zone | OC Time | OC Speedup | Swift Time | Swift Speedup |
-|-----------|---------|------------|------------|---------------|
-| **Sao Paulo (Recent)** | 0.1453s | 5.89x | 0.0892s | **9.95x** |
-| **Sao Paulo (1970-)** | 0.1329s | 7.26x | 0.0919s | **10.19x** |
-| **Indianapolis (Recent)** | 0.1415s | 6.53x | 0.1036s | **8.71x** |
-| **Indianapolis (1970-)** | 0.1417s | 6.60x | 0.0985s | **9.28x** |
-| **GMT (Recent)** | 0.1328s | 6.46x | 0.0832s | **10.06x** |
-| **GMT (1970-)** | 0.1240s | 6.68x | 0.0856s | **10.01x** |
+| Time Zone | Swift | OC | Faster | Diff |
+|-----------|:-----:|:--:|:------:|:----:|
+| Sao Paulo (Recent) | **0.1024s** | 0.1587s | Swift | **35.5%** |
+| Sao Paulo (1970-) | **0.1067s** | 0.1600s | Swift | **33.3%** |
+| Indianapolis (Recent) | **0.1092s** | 0.1649s | Swift | **33.8%** |
+| Indianapolis (1970-) | **0.1113s** | 0.1664s | Swift | **33.1%** |
+| GMT (Recent) | **0.1006s** | 0.1511s | Swift | **33.4%** |
+| GMT (1970-) | **0.1008s** | 0.1506s | Swift | **33.0%** |
 
-**Average**: OC 6.57x vs Swift **9.70x** (Swift is **47.6% faster**)
+**Average**: Swift 0.1052s vs OC 0.1586s → **Swift is 33.7% faster** ⭐
 
 ---
 
-### iOS Benchmark Results
+### macOS Benchmark Results (MacBook Pro M4 Pro, macOS 15.7.1)
 
 #### Construction Performance (10,000 iterations)
 
-| Version | Time | Apple Baseline | Speedup |
-|---------|------|----------------|---------|
-| OC | 0.0569s | 0.4196s | 7.37x |
-| Swift | 0.0572s | 0.4725s | **8.27x** |
+| Version | Time | Comparison |
+|---------|------|------------|
+| **OC** | **0.0244s** | Baseline |
+| Swift | 0.0271s | OC is 11% faster |
 
 #### String to Date (100,000 iterations)
 
-| Time Zone | OC Time | OC Speedup | Swift Time | Swift Speedup |
-|-----------|---------|------------|------------|---------------|
-| **Sao Paulo (Recent)** | 0.1622s | 14.64x | 0.1594s | **16.27x** |
-| **Sao Paulo (1970-)** | 0.1751s | 14.00x | 0.1769s | **14.87x** |
-| **Indianapolis (Recent)** | 0.1745s | 14.12x | 0.1820s | **14.58x** |
-| **Indianapolis (1970-)** | 0.1776s | 13.95x | 0.1819s | **14.79x** |
-| **GMT (Recent)** | 0.1809s | 14.00x | 0.1861s | **14.77x** |
-| **GMT (1970-)** | 0.1846s | 13.88x | 0.1871s | **14.87x** |
+| Time Zone | Swift | OC | Faster | Diff |
+|-----------|:-----:|:--:|:------:|:----:|
+| Sao Paulo (Recent) | **0.1052s** | 0.1232s | Swift | 14.6% |
+| Sao Paulo (1970-) | **0.1070s** | 0.1226s | Swift | 12.7% |
+| Indianapolis (Recent) | **0.1116s** | 0.1325s | Swift | 15.8% |
+| Indianapolis (1970-) | 0.1175s | **0.1147s** | OC | 2.4% |
+| GMT (Recent) | **0.1094s** | 0.1162s | Swift | 5.8% |
+| GMT (1970-) | **0.1056s** | 0.1244s | Swift | 15.1% |
 
-**Average**: OC 14.10x vs Swift **15.03x** (Swift is **6.6% faster**)
+**Average**: Swift 0.1094s vs OC 0.1223s → **Swift is 10.5% faster**
 
-#### Date to String (1,000,000 iterations)
+#### Date to String (1,000,000 iterations) ⭐
 
-| Time Zone | OC Time | OC Speedup | Swift Time | Swift Speedup |
-|-----------|---------|------------|------------|---------------|
-| **Sao Paulo (Recent)** | 0.1872s | 5.08x | 0.1357s | **6.98x** |
-| **Sao Paulo (1970-)** | 0.1887s | 5.77x | 0.1405s | **7.51x** |
-| **Indianapolis (Recent)** | 0.1883s | 5.36x | 0.1405s | **7.04x** |
-| **Indianapolis (1970-)** | 0.1896s | 5.17x | 0.1412s | **7.12x** |
-| **GMT (Recent)** | 0.1787s | 5.14x | 0.1331s | **6.70x** |
-| **GMT (1970-)** | 0.1744s | 5.15x | 0.1296s | **7.05x** |
+| Time Zone | Swift | OC | Faster | Diff |
+|-----------|:-----:|:--:|:------:|:----:|
+| Sao Paulo (Recent) | **0.0892s** | 0.1453s | Swift | **38.6%** |
+| Sao Paulo (1970-) | **0.0919s** | 0.1329s | Swift | **30.8%** |
+| Indianapolis (Recent) | **0.1036s** | 0.1415s | Swift | **26.8%** |
+| Indianapolis (1970-) | **0.0985s** | 0.1417s | Swift | **30.5%** |
+| GMT (Recent) | **0.0832s** | 0.1328s | Swift | **37.4%** |
+| GMT (1970-) | **0.0856s** | 0.1240s | Swift | **31.0%** |
 
-**Average**: OC 5.28x vs Swift **7.07x** (Swift is **33.9% faster**)
-
----
-
-## Analysis
-
-### Key Findings
-
-1. **Date to String is significantly faster in Swift version**
-   - macOS: Swift is ~48% faster than OC
-   - iOS: Swift is ~34% faster than OC
-   - This is the most significant performance difference
-
-2. **String to Date shows moderate improvement in Swift**
-   - macOS: Swift is ~12% faster
-   - iOS: Swift is ~7% faster
-
-3. **Construction performance is comparable**
-   - Both versions are within 10-15% of each other
-   - The difference is negligible for most use cases
-
-4. **Both versions significantly outperform Apple's ISO8601DateFormatter**
-   - String parsing: 14-25x faster
-   - Date formatting: 5-10x faster
-   - Construction: 7-19x faster
-
-### Platform Observations
-
-- **macOS shows larger performance gaps** between the two versions, likely due to better optimization opportunities on desktop hardware
-- **iOS performance is more constrained** but still shows clear advantages for the Swift version
-- The Apple baseline (`ISO8601DateFormatter`) performs differently across platforms, affecting speedup ratios
+**Average**: Swift 0.0920s vs OC 0.1364s → **Swift is 48.2% faster** ⭐
 
 ---
 
-## Conclusion
+## Comparison vs Apple's ISO8601DateFormatter
 
-The **Swift port (Asura19)** demonstrates **superior performance** in the most common use cases:
+Both JJL versions significantly outperform Apple's built-in formatter:
 
-| Use Case | Recommendation |
-|----------|----------------|
-| High-volume date formatting | ✅ **Swift version** (34-48% faster) |
-| High-volume date parsing | ✅ **Swift version** (7-12% faster) |
-| Frequent formatter creation | ≈ Both comparable |
-| Pure Swift projects | ✅ **Swift version** (native integration) |
-| Existing OC codebases | ⚠️ OC version (avoid bridging overhead) |
+| Platform | JJL (Swift) vs Apple | JJL (OC) vs Apple |
+|----------|:--------------------:|:-----------------:|
+| **iOS - Construction** | 6.9x faster | 6.6x faster |
+| **iOS - String→Date** | 18-22x faster | 19-22x faster |
+| **iOS - Date→String** | 7.6-8.5x faster | 5.1-5.7x faster |
+| **macOS - Construction** | 16.6x faster | 18.6x faster |
+| **macOS - String→Date** | 21-25x faster | 19-22x faster |
+| **macOS - Date→String** | 8.7-10.2x faster | 5.9-7.3x faster |
 
-### Recommended Version
+---
 
-For **new projects** and **performance-critical applications**, the **Swift version** is recommended due to:
-- Consistent performance improvements across all benchmarks
+## Key Findings
+
+### 1. Date → String: Swift is significantly faster ⭐
+
+This is the most important finding:
+
+| Platform | Swift Advantage |
+|----------|:---------------:|
+| iOS | **34% faster** |
+| macOS | **48% faster** |
+
+### 2. String → Date: Swift has moderate advantage
+
+| Platform | Swift Advantage |
+|----------|:---------------:|
+| iOS | ~1% (virtually tied) |
+| macOS | **11% faster** |
+
+### 3. Construction: OC is slightly faster
+
+| Platform | OC Advantage |
+|----------|:------------:|
+| iOS | 7% faster |
+| macOS | 11% faster |
+
+---
+
+## Recommendations
+
+| Use Case | Recommendation | Reason |
+|----------|----------------|--------|
+| **High-volume date formatting** | ✅ **Swift** | 34-48% faster |
+| **High-volume date parsing** | ✅ Swift (macOS) / Either (iOS) | 11% faster on macOS |
+| **Frequent formatter creation** | ✅ OC | 7-11% faster |
+| **Pure Swift projects** | ✅ **Swift** | Native integration |
+| **Existing OC codebases** | ⚠️ OC | Avoid bridging overhead |
+| **General use** | ✅ **Swift** | Best overall performance |
+
+### Bottom Line
+
+For **new projects** and **performance-critical applications**, the **Swift version** is recommended:
+- **Date→String is 34-48% faster** - the most significant improvement
 - Native Swift integration without Objective-C bridging
 - Modern Swift idioms and type safety
 
